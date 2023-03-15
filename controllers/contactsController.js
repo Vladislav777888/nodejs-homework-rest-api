@@ -21,16 +21,7 @@ exports.getById = catchAsync(async (req, res, next) => {
 });
 
 exports.addContact = catchAsync(async (req, res, next) => {
-  const { error, value } = contactValidator(req.body);
-
-  const { name, email, phone } = req.body;
-  if (!name || !email || !phone) {
-    return next(new AppError(400, "missing required name field"));
-  }
-
-  if (error) {
-    return next(new AppError(400, error.details[0].message));
-  }
+  const { value } = contactValidator(req.body);
 
   const contact = await contactsModels.addContact(value);
 
@@ -50,23 +41,10 @@ exports.removeContact = catchAsync(async (req, res, next) => {
 });
 
 exports.updateContact = catchAsync(async (req, res, next) => {
-  const { error, value } = contactValidator(req.body);
-  const { name, email, phone } = req.body;
+  const { value } = contactValidator(req.body);
   const { contactId } = req.params;
 
-  if (!name || !email || !phone) {
-    return next(new AppError(400, "missing fields"));
-  }
-
-  if (error) {
-    return next(new AppError(400, error.details[0].message));
-  }
-
   const contact = await contactsModels.updateContact(contactId, value);
-
-  if (!contact) {
-    return next(new AppError(404, "Not found"));
-  }
 
   res.status(200).json(contact);
 });

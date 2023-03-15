@@ -15,4 +15,6 @@ const contactValidator = (data) => {
   return schema.validate(data);
 };
 
-module.exports = contactValidator;
+module.exports = {
+  contactValidator,
+};
