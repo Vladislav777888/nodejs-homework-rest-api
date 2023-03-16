@@ -1,0 +1,50 @@
+const contactsModels = require("../models/contacts");
+
+const { AppError, catchAsync, contactValidator } = require("../utils");
+
+exports.listContacts = catchAsync(async (req, res, next) => {
+  const contacts = await contactsModels.listContacts();
+
+  res.status(200).json([...contacts]);
+});
+
+exports.getById = catchAsync(async (req, res, next) => {
+  const { contactId } = req.params;
+
+  const contact = await contactsModels.getById(contactId);
+
+  if (!contact) {
+    return next(new AppError(404, "Not found"));
+  }
+
+  res.status(200).json(contact);
+});
+
+exports.addContact = catchAsync(async (req, res, next) => {
+  const { value } = contactValidator(req.body);
+
+  const contact = await contactsModels.addContact(value);
+
+  res.status(201).json(contact);
+});
+
+exports.removeContact = catchAsync(async (req, res, next) => {
+  const { contactId } = req.params;
+
+  const deleteContact = await contactsModels.removeContact(contactId);
+
+  if (!deleteContact) {
+    return next(new AppError(404, "Not found"));
+  }
+
+  res.status(200).json({ message: "contact deleted" });
+});
+
+exports.updateContact = catchAsync(async (req, res, next) => {
+  const { value } = contactValidator(req.body);
+  const { contactId } = req.params;
+
+  const contact = await contactsModels.updateContact(contactId, value);
+
+  res.status(200).json(contact);
+});
