@@ -1,11 +1,11 @@
 const contactsModels = require("../models/contacts");
 
-const { AppError, catchAsync, contactValidator } = require("../utils");
+const { catchAsync } = require("../utils");
 
 exports.listContacts = catchAsync(async (req, res, next) => {
   const contacts = await contactsModels.listContacts();
 
-  res.status(200).json([...contacts]);
+  res.status(200).json(contacts);
 });
 
 exports.getById = catchAsync(async (req, res, next) => {
@@ -13,38 +13,42 @@ exports.getById = catchAsync(async (req, res, next) => {
 
   const contact = await contactsModels.getById(contactId);
 
-  if (!contact) {
-    return next(new AppError(404, "Not found"));
-  }
-
   res.status(200).json(contact);
 });
 
 exports.addContact = catchAsync(async (req, res, next) => {
-  const { value } = contactValidator(req.body);
+  const newContact = await contactsModels.addContact(req.body);
 
-  const contact = await contactsModels.addContact(value);
-
-  res.status(201).json(contact);
+  res.status(201).json(newContact);
 });
 
 exports.removeContact = catchAsync(async (req, res, next) => {
   const { contactId } = req.params;
 
-  const deleteContact = await contactsModels.removeContact(contactId);
-
-  if (!deleteContact) {
-    return next(new AppError(404, "Not found"));
-  }
+  await contactsModels.removeContact(contactId);
 
   res.status(200).json({ message: "contact deleted" });
 });
 
 exports.updateContact = catchAsync(async (req, res, next) => {
-  const { value } = contactValidator(req.body);
   const { contactId } = req.params;
 
-  const contact = await contactsModels.updateContact(contactId, value);
+  const contact = await contactsModels.updateContact(contactId, {
+    name: req.body.name,
+    email: req.body.email,
+    phone: req.body.phone,
+  });
+
+  res.status(200).json(contact);
+});
+
+exports.updateStatusContact = catchAsync(async (req, res, next) => {
+  const { contactId } = req.params;
+  const { favorite } = req.body;
+
+  const contact = await contactsModels.updateStatusContact(contactId, {
+    favorite,
+  });
 
   res.status(200).json(contact);
 });
