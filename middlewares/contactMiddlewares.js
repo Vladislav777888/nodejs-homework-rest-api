@@ -1,49 +1,86 @@
-const contactsModels = require("../models/contacts");
+const { Types } = require("mongoose");
 const { AppError, catchAsync, contactValidator } = require("../utils");
+const Contact = require("../models/contactModel");
 
-exports.checkAddContact = catchAsync(async (req, res, next) => {
-  const { error } = contactValidator(req.body);
-  const { name, email, phone } = req.body;
+exports.checkContactId = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
 
-  const keys = ["name", "email", "phone"];
+  const idIsValid = Types.ObjectId.isValid(id);
 
-  if (!name) {
-    return next(new AppError(400, `missing required ${keys[0]} field`));
+  if (!idIsValid) {
+    return next(new AppError(404, "Not found"));
   }
 
-  if (!email) {
-    return next(new AppError(400, `missing required ${keys[1]} field`));
-  }
+  const contactExists = await Contact.exists({ _id: id });
 
-  if (!phone) {
-    return next(new AppError(400, `missing required ${keys[2]} field`));
-  }
-
-  if (error) {
-    return next(new AppError(400, error.details[0].message));
+  if (!contactExists) {
+    return next(new AppError(404, "Not found"));
   }
 
   next();
 });
 
-exports.checkUpdateContact = catchAsync(async (req, res, next) => {
-  const { error, value } = contactValidator(req.body);
-  const { name, email, phone } = req.body;
-  const { contactId } = req.params;
+exports.checkAddContact = catchAsync(async (req, res, next) => {
+  const { error, value } = contactValidator.createContactDataValidator(
+    req.body
+  );
 
-  if (!name || !email || !phone) {
-    return next(new AppError(400, "missing fields"));
+  if (error) {
+    return next(
+      new AppError(
+        400,
+        error.details.map((item) => {
+          return `missing required ${item.context.label} field`;
+        })
+      )
+    );
   }
+
+  const contactExists = await Contact.exists({ email: value.email });
+
+  if (contactExists)
+    return next(new AppError(409, "Contact with this email already exists.."));
+
+  req.body = value;
+
+  next();
+});
+
+exports.checkUpdateContact = catchAsync(async (req, res, next) => {
+  const { error, value } = contactValidator.updateContactDataValidator(
+    req.body
+  );
 
   if (error) {
     return next(new AppError(400, error.details[0].message));
   }
 
-  const contact = await contactsModels.updateContact(contactId, value);
+  // console.log(Object.keys(value).length);
 
-  if (!contact) {
-    return next(new AppError(404, "Not found"));
+  if (Object.keys(value).length === 0) {
+    return next(new AppError(400, "missing fields"));
   }
+
+  const contactExists = await Contact.exists({ email: value.email });
+
+  if (contactExists)
+    return next(new AppError(409, "Contact with this email already exists.."));
+
+  req.body = value;
+
+  next();
+});
+
+exports.checkUpdateContactStatus = catchAsync(async (req, res, next) => {
+  const { error, value } = contactValidator.updateContactStatusValidator(
+    req.body
+  );
+
+  if (error) {
+    return next(new AppError(400, "missing field favorite"));
+  }
+
+  req.body = value;
 
   next();
 });
