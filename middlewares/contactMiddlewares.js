@@ -3,15 +3,16 @@ const { AppError, catchAsync, contactValidator } = require("../utils");
 const Contact = require("../models/contactModel");
 
 exports.checkContactId = catchAsync(async (req, res, next) => {
-  const { id } = req.params;
+  const { id: contactId } = req.params;
+  const { _id: userId } = req.user;
 
-  const idIsValid = Types.ObjectId.isValid(id);
+  const idIsValid = Types.ObjectId.isValid(contactId);
 
   if (!idIsValid) {
     return next(new AppError(404, "Not found"));
   }
 
-  const contactExists = await Contact.exists({ _id: id });
+  const contactExists = await Contact.exists({ _id: contactId, owner: userId });
 
   if (!contactExists) {
     return next(new AppError(404, "Not found"));
@@ -24,6 +25,7 @@ exports.checkAddContact = catchAsync(async (req, res, next) => {
   const { error, value } = contactValidator.createContactDataValidator(
     req.body
   );
+  const { _id: userId } = req.user;
 
   if (error) {
     return next(
@@ -36,7 +38,10 @@ exports.checkAddContact = catchAsync(async (req, res, next) => {
     );
   }
 
-  const contactExists = await Contact.exists({ email: value.email });
+  const contactExists = await Contact.exists({
+    email: value.email,
+    owner: userId,
+  });
 
   if (contactExists)
     return next(new AppError(409, "Contact with this email already exists.."));
