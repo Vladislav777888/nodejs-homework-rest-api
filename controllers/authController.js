@@ -1,5 +1,6 @@
 const { catchAsync } = require("../utils");
 const { authService } = require("../services");
+const { enums } = require("../constants");
 
 exports.registerUser = catchAsync(async (req, res, next) => {
   const { email, subscription } = req.body;
@@ -9,7 +10,7 @@ exports.registerUser = catchAsync(async (req, res, next) => {
   res.status(201).json({
     user: {
       email,
-      subscription: subscription || "starter",
+      subscription: subscription || enums.USER_SUBSCRIPTION_ENUM.STARTER,
     },
   });
 });
