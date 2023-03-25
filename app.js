@@ -6,6 +6,7 @@ const dotenv = require("dotenv");
 
 dotenv.config({ path: "./.env" });
 
+const authRouter = require("./routes/api/authRouter");
 const contactsRouter = require("./routes/api/contactsRoutes");
 
 const app = express();
@@ -26,7 +27,7 @@ mongoose
 app.use(logger(formatsLogger));
 app.use(cors());
 app.use(express.json());
-
+app.use("/users", authRouter);
 app.use("/api/contacts", contactsRouter);
 
 app.use((req, res) => {

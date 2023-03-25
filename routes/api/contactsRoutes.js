@@ -1,34 +1,29 @@
 const express = require("express");
-const router = express.Router();
+const contactsRouter = express.Router();
 
-const {
-  listContacts,
-  getById,
-  addContact,
-  removeContact,
-  updateContact,
-  updateStatusContact,
-} = require("../../controllers");
+const { contactsController } = require("../../controllers");
+const { contactMiddlewares, authMiddlewares } = require("../../middlewares");
 
-const {
-  checkContactId,
-  checkAddContact,
-  checkUpdateContact,
-  checkUpdateContactStatus,
-} = require("../../middlewares/contactMiddlewares");
+contactsRouter.use(authMiddlewares.protectRoute);
 
-router.route("/").get(listContacts).post(checkAddContact, addContact);
+contactsRouter
+  .route("/")
+  .get(contactsController.listContacts)
+  .post(contactMiddlewares.checkAddContact, contactsController.addContact);
 
-router.use("/:id", checkContactId);
+contactsRouter.use("/:id", contactMiddlewares.checkContactId);
 
-router
+contactsRouter
   .route("/:contactId")
-  .get(getById)
-  .delete(removeContact)
-  .put(checkUpdateContact, updateContact);
+  .get(contactsController.getById)
+  .delete(contactsController.removeContact)
+  .put(contactMiddlewares.checkUpdateContact, contactsController.updateContact);
 
-router
+contactsRouter
   .route("/:contactId/favorite")
-  .patch(checkUpdateContactStatus, updateStatusContact);
+  .patch(
+    contactMiddlewares.checkUpdateContactStatus,
+    contactsController.updateStatusContact
+  );
 
-module.exports = router;
+module.exports = contactsRouter;
