@@ -1,5 +1,6 @@
-const { Schema, model } = require("mongoose");
 const bcrypt = require("bcrypt");
+const crypto = require("crypto");
+const { Schema, model } = require("mongoose");
 const { enums } = require("../constants");
 
 const authScheme = new Schema({
@@ -17,6 +18,7 @@ const authScheme = new Schema({
     enum: Object.values(enums.USER_SUBSCRIPTION_ENUM),
     default: enums.USER_SUBSCRIPTION_ENUM.STARTER,
   },
+  avatarURL: String,
   token: {
     type: String,
     default: null,
@@ -24,6 +26,12 @@ const authScheme = new Schema({
 });
 
 authScheme.pre("save", async function (next) {
+  if (this.isNew) {
+    const emailHash = crypto.createHash("md5").update(this.email).digest("hex");
+
+    this.avatarURL = `https://www.gravatar.com/avatar/${emailHash}.jpg?d=retro`;
+  }
+
   if (!this.isModified("password")) return next();
 
   const salt = await bcrypt.genSalt(10);

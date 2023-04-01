@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/authModel");
+const { ImageService } = require("../services");
 const { AppError, catchAsync, authValidator } = require("../utils");
 
 exports.checkUserRegister = catchAsync(async (req, res, next) => {
@@ -127,3 +128,5 @@ exports.checkUserSubscription = catchAsync(async (req, res, next) => {
 
   next();
 });
+
+exports.checkUploadUserPhoto = ImageService.upload("avatar");

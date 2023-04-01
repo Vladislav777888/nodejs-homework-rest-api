@@ -1,16 +1,17 @@
 const { catchAsync } = require("../utils");
-const { authService } = require("../services");
-const { enums } = require("../constants");
+const { authService, ImageService } = require("../services");
+const { AppError } = require("../utils");
 
 exports.registerUser = catchAsync(async (req, res, next) => {
-  const { email, subscription } = req.body;
-
-  await authService.register(req.body);
+  const { email, subscription, avatarURL } = await authService.register(
+    req.body
+  );
 
   res.status(201).json({
     user: {
       email,
-      subscription: subscription || enums.USER_SUBSCRIPTION_ENUM.STARTER,
+      subscription,
+      avatarURL,
     },
   });
 });
@@ -52,5 +53,23 @@ exports.updateUserSubscription = catchAsync(async (req, res, next) => {
   res.status(200).json({
     email,
     subscription,
+  });
+});
+
+exports.updateUserPhoto = catchAsync(async (req, res, next) => {
+  if (req.file === undefined) {
+    return next(new AppError(400, "Please upload a photo!"));
+  }
+
+  const { user } = req;
+
+  const fileName = await ImageService.save(user, req.file);
+
+  user.avatarURL = fileName;
+
+  const updatedUser = await user.save();
+
+  res.status(200).json({
+    avatarURL: updatedUser.avatarURL,
   });
 });
