@@ -2,7 +2,6 @@ const express = require("express");
 const authRouter = express.Router();
 
 const { authMiddlewares } = require("../../middlewares");
-
 const { authController } = require("../../controllers");
 
 authRouter
@@ -17,8 +16,12 @@ authRouter
 authRouter
   .route("/current")
   .get(authMiddlewares.checkCurrentUser, authController.currentUser);
-
-// authRouter.use(protectRoute);
+authRouter
+  .route("/avatars")
+  .patch(
+    [authMiddlewares.checkCurrentUser, authMiddlewares.checkUploadUserPhoto],
+    authController.updateUserPhoto
+  );
 
 authRouter
   .route("/")
