@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { Schema, model } = require("mongoose");
 const { enums } = require("../constants");
+// const uuid = require("uuid").v4;
 
 const authScheme = new Schema({
   password: {
@@ -22,6 +23,14 @@ const authScheme = new Schema({
   token: {
     type: String,
     default: null,
+  },
+  verify: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: {
+    type: String,
+    required: [true, "Verify token is required"],
   },
 });
 

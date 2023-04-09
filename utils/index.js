@@ -3,6 +3,7 @@ const catchAsync = require("./catchAsync");
 const contactValidator = require("./contactValidator");
 const authValidator = require("./authValidator");
 const signToken = require("./signToken");
+const sendEmail = require("./sendEmail");
 
 module.exports = {
   AppError,
@@ -10,4 +11,5 @@ module.exports = {
   contactValidator,
   authValidator,
   signToken,
+  sendEmail,
 };
