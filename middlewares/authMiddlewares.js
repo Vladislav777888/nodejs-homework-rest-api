@@ -23,14 +23,16 @@ exports.checkUserRegister = catchAsync(async (req, res, next) => {
 exports.checkUserLogin = catchAsync(async (req, res, next) => {
   const { error, value } = authValidator.loginValidator(req.body);
 
-  const user = await User.findOne({ email: value.email });
+  const user = await User.findOne({
+    email: value.email,
+  });
 
   if (error) {
     return next(new AppError(400, error.details[0].message));
   }
 
-  if (!user) {
-    return next(new AppError(401, "Email or password is wrong"));
+  if (!user || !user.verify) {
+    return next(new AppError(401, "Email or password or verify is wrong"));
   }
 
   const correctPassword = await user.checkPassword(
@@ -125,6 +127,36 @@ exports.checkUserSubscription = catchAsync(async (req, res, next) => {
   }
 
   req.body = value;
+
+  next();
+});
+
+exports.checkVerifyEmail = catchAsync(async (req, res, next) => {
+  const { verificationToken } = req.params;
+  const user = await User.findOne({ verificationToken });
+
+  if (!user) {
+    return next(new AppError(404, "User not found"));
+  }
+
+  req.user = user;
+
+  next();
+});
+
+exports.checkVerifyEmailAgain = catchAsync(async (req, res, next) => {
+  const { error, value } = authValidator.verifyEmailAgainValidator(req.body);
+  const user = await User.findOne({ email: value.email, verify: false });
+
+  if (error) {
+    return next(new AppError(400, "missing required field email"));
+  }
+
+  if (!user) {
+    return next(new AppError(400, "Verification has already been passed"));
+  }
+
+  req.user = user;
 
   next();
 });

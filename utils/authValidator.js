@@ -39,3 +39,11 @@ exports.updateUserSubscriptionValidator = (data) => {
 
   return schema.validate(data);
 };
+
+exports.verifyEmailAgainValidator = (data) => {
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+  });
+
+  return schema.validate(data);
+};

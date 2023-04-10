@@ -73,3 +73,19 @@ exports.updateUserPhoto = catchAsync(async (req, res, next) => {
     avatarURL: updatedUser.avatarURL,
   });
 });
+
+exports.verifyEmail = catchAsync(async (req, res, next) => {
+  await authService.verifyEmail(req.user);
+
+  res.status(200).json({
+    message: "Verification successful",
+  });
+});
+
+exports.verifyEmailAgain = catchAsync(async (req, res, next) => {
+  await authService.verifyEmailAgain(req.user);
+
+  res.status(200).json({
+    message: "Verification email sent",
+  });
+});
